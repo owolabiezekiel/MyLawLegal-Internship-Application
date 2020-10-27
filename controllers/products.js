@@ -77,19 +77,30 @@ exports.addProduct = asyncHandler(async (req, res, next) => {
  * @route
  * @access Private
  */
-exports.updateCategory = asyncHandler(async (req, res, next) => {
-  const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
+exports.updateProduct = asyncHandler(async (req, res, next) => {
+  let product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return next(
+      new ErrorResponse(`Product with id of ${req.params.id} not found`, 404)
+    );
+  }
+
+  if (req.body.amountInStock && req.body.amountInStock > 0) {
+    console.log(req.body.amountInStock);
+    req.body.inStock = true;
+  }
+  if (req.body.amountInStock && req.body.amountInStock <= 0) {
+    console.log(req.body.amountInStock);
+    req.body.inStock = false;
+  }
+
+  product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
   });
 
-  if (!category) {
-    return next(
-      new ErrorResponse(`Category with id of ${req.params.id} not found`, 404)
-    );
-  }
-
-  res.status(200).json({ success: true, data: category });
+  res.status(200).json({ success: true, data: product });
 });
 
 /*
@@ -97,13 +108,16 @@ exports.updateCategory = asyncHandler(async (req, res, next) => {
  * @route
  * @access Private
  */
-exports.deleteCategory = asyncHandler(async (req, res, next) => {
-  const category = await Category.findByIdAndDelete(req.params.id);
-  if (!category) {
+exports.deleteProduct = asyncHandler(async (req, res, next) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) {
     return next(
-      new ErrorResponse(`Category with id of ${req.params.id} not found`, 404)
+      new ErrorResponse(`Product with id of ${req.params.id} not found`, 404)
     );
   }
+
+  await product.remove();
+
   res.status(200).json({
     success: true,
     data: {},

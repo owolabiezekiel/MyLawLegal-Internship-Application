@@ -18,6 +18,7 @@ const ProductSchema = new mongoose.Schema({
   amountInStock: {
     type: Number,
     required: [true, "Please provide product name"],
+    min: [0, "Amount in stock cant be negative"],
   },
   slug: String,
   createdAt: {
