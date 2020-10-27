@@ -15,6 +15,7 @@ connectDB();
 const categories = require("./routes/categories");
 const products = require("./routes/products");
 const auth = require("./routes/auth");
+const users = require("./routes/users");
 
 const app = express();
 
@@ -30,6 +31,7 @@ if (process.env.NODE_ENV === "development") {
 app.use("/api/v1/categories", categories);
 app.use("/api/v1/products", products);
 app.use("/api/v1/auth", auth);
+app.use("/api/v1/users", users);
 
 // Middlewares are linear. It must appear after all the routes that need it have been mounted
 app.use(errorHander);
