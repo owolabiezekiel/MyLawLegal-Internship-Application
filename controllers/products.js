@@ -1,5 +1,6 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
+const Product = require("../models/Product");
 const Category = require("../models/Category");
 
 /*
@@ -7,11 +8,23 @@ const Category = require("../models/Category");
  * @route
  * @access Public
  */
-exports.getCategories = asyncHandler(async (req, res, next) => {
-  const categories = await Category.find().populate("products");
+exports.getProducts = asyncHandler(async (req, res, next) => {
+  let query;
+  if (req.params.categoryId) {
+    query = Product.find({ category: req.params.categoryId }).populate({
+      path: "category",
+      select: "name slug",
+    });
+  } else {
+    query = Product.find().populate({
+      path: "category",
+      select: "name slug",
+    });
+  }
+  const products = await query;
   res
     .status(200)
-    .json({ success: true, count: categories.length, data: categories });
+    .json({ success: true, count: products.length, data: products });
 });
 
 /*
@@ -19,14 +32,17 @@ exports.getCategories = asyncHandler(async (req, res, next) => {
  * @route
  * @access Public
  */
-exports.getCategory = asyncHandler(async (req, res, next) => {
-  const category = await Category.findById(req.params.id);
-  if (!category) {
+exports.getProduct = asyncHandler(async (req, res, next) => {
+  const product = await Product.findById(req.params.id).populate({
+    path: "category",
+    select: "name slug",
+  });
+  if (!product) {
     return next(
       new ErrorResponse(`Category with id of ${req.params.id} not found`, 404)
     );
   }
-  res.status(200).json({ success: true, data: category });
+  res.status(200).json({ success: true, data: product });
 });
 
 /*
@@ -34,12 +50,25 @@ exports.getCategory = asyncHandler(async (req, res, next) => {
  * @route
  * @access Private
  */
-exports.createCategory = asyncHandler(async (req, res, next) => {
-  const category = await Category.create(req.body);
+exports.addProduct = asyncHandler(async (req, res, next) => {
+  req.body.category = req.params.categoryId;
+
+  const category = await Category.findById(req.params.categoryId);
+
+  if (!category) {
+    return next(
+      new ErrorResponse(
+        `Category with id of ${req.params.categoryId} not found`,
+        404
+      )
+    );
+  }
+
+  const product = await Product.create(req.body);
 
   res.status(201).json({
     success: true,
-    data: category,
+    data: product,
   });
 });
 
@@ -69,14 +98,12 @@ exports.updateCategory = asyncHandler(async (req, res, next) => {
  * @access Private
  */
 exports.deleteCategory = asyncHandler(async (req, res, next) => {
-  const category = await Category.findById(req.params.id);
+  const category = await Category.findByIdAndDelete(req.params.id);
   if (!category) {
     return next(
       new ErrorResponse(`Category with id of ${req.params.id} not found`, 404)
     );
   }
-
-  category.remove();
   res.status(200).json({
     success: true,
     data: {},

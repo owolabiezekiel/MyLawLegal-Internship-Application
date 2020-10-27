@@ -13,6 +13,7 @@ connectDB();
 
 //Route files
 const categories = require("./routes/categories");
+const products = require("./routes/products");
 
 const app = express();
 
@@ -26,6 +27,7 @@ if (process.env.NODE_ENV === "development") {
 
 // Mount routers
 app.use("/api/v1/categories", categories);
+app.use("/api/v1/products", products);
 
 // Middlewares are linear. It must appear after all the routes that need it have been mounted
 app.use(errorHander);
