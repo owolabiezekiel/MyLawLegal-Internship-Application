@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middlewares/auth");
+const { protect, authorize } = require("../middlewares/auth");
 const {
   getProducts,
   getProduct,
@@ -10,11 +10,14 @@ const {
 
 const router = express.Router({ mergeParams: true });
 
-router.route("/").get(getProducts).post(protect, addProduct);
+router
+  .route("/")
+  .get(protect, getProducts)
+  .post(protect, authorize("admin"), addProduct);
 router
   .route("/:id")
-  .get(getProduct)
-  .put(protect, updateProduct)
-  .delete(protect, deleteProduct);
+  .get(protect, getProduct)
+  .put(protect, authorize("admin"), updateProduct)
+  .delete(protect, authorize("admin"), deleteProduct);
 
 module.exports = router;

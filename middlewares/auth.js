@@ -27,3 +27,18 @@ exports.protect = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Unauthorized access", 401));
   }
 });
+
+// Authorize different users for different roles
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ErrorResponse(
+          `Unauthorized access for user role: ${req.user.role}`,
+          401
+        )
+      );
+    }
+    next();
+  };
+};

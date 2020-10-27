@@ -1,6 +1,6 @@
 const express = require("express");
 
-const { protect } = require("../middlewares/auth");
+const { protect, authorize } = require("../middlewares/auth");
 const {
   getCategories,
   getCategory,
@@ -17,11 +17,14 @@ const router = express.Router();
 // Re-route into other resource routers
 router.use("/:categoryId/products", productRouter);
 
-router.route("/").get(getCategories).post(protect, createCategory);
+router
+  .route("/")
+  .get(protect, getCategories)
+  .post(protect, authorize("admin"), createCategory);
 router
   .route("/:id")
-  .get(getCategory)
-  .put(protect, updateCategory)
-  .delete(protect, deleteCategory);
+  .get(protect, getCategory)
+  .put(protect, authorize("admin"), updateCategory)
+  .delete(protect, authorize("admin"), deleteCategory);
 
 module.exports = router;
